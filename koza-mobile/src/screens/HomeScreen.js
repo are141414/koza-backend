@@ -2,26 +2,55 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, RefreshControl, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { calculatePregnancyStatus, getWeeklyDevelopment } from '../utils/pregnancy';
+import { getData, storeData, CACHE_KEYS } from '../utils/cache';
 
-const MOCK_LMP = new Date();
-MOCK_LMP.setDate(MOCK_LMP.getDate() - 85);
-const LMP_STRING = MOCK_LMP.toISOString().split('T')[0];
+const DEFAULT_LMP = new Date();
+DEFAULT_LMP.setDate(DEFAULT_LMP.getDate() - 28); // 4 weeks ago fallback
 
 export default function HomeScreen() {
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [pregnancyData, setPregnancyData] = useState(null);
     const [developmentData, setDevelopmentData] = useState(null);
+    const [userName, setUserName] = useState('');
 
-    const loadData = async () => {
+    const loadData = async (isRefresh = false) => {
+        // 1. Get User Profile
+        let lmpString = DEFAULT_LMP.toISOString().split('T')[0];
         try {
-            const status = await calculatePregnancyStatus(LMP_STRING);
+            const userProfile = await getData(CACHE_KEYS.USER_PROFILE);
+            if (userProfile && userProfile.lmp) {
+                lmpString = userProfile.lmp;
+                if (userProfile.name) setUserName(userProfile.name);
+            }
+        } catch (e) {
+            console.error("Error loading user profile", e);
+        }
+
+        // 2. Try to load from cache first if not refreshing explicitly
+        if (!isRefresh) {
+            const cachedPregnancy = await getData(CACHE_KEYS.PREGNANCY_STATUS);
+            const cachedDevelopment = await getData(CACHE_KEYS.WEEKLY_DEVELOPMENT);
+
+            if (cachedPregnancy && cachedDevelopment) {
+                setPregnancyData(cachedPregnancy);
+                setDevelopmentData(cachedDevelopment);
+                setLoading(false); // Show cached content immediately
+            }
+        }
+
+        try {
+            // 3. Fetch fresh data using user's LMP
+            const status = await calculatePregnancyStatus(lmpString);
             if (status && status.weeks) {
                 setPregnancyData(status);
+                storeData(CACHE_KEYS.PREGNANCY_STATUS, status); // Update cache
+
                 const dev = await getWeeklyDevelopment(status.weeks);
                 setDevelopmentData(dev);
-            } else {
-                // Use mock data if API fails
+                storeData(CACHE_KEYS.WEEKLY_DEVELOPMENT, dev); // Update cache
+            } else if (!pregnancyData) {
+                // Mock data fallback
                 const mockData = {
                     weeks: 22,
                     days: 4,
@@ -39,21 +68,23 @@ export default function HomeScreen() {
             }
         } catch (error) {
             console.error('Error loading pregnancy data:', error);
-            // Fallback to mock data on error
-            const mockData = {
-                weeks: 22,
-                days: 4,
-                due_date: "2026-06-10",
-                trimester: 2,
-                current_week: 22,
-                days_remaining: 135
-            };
-            setPregnancyData(mockData);
-            setDevelopmentData({
-                week: 22,
-                baby_size_comparison: "Muz kadar",
-                development: "Bebeğin tüm organları oluştu"
-            });
+            if (!pregnancyData) {
+                 // Fallback to mock data on error if no data shown
+                const mockData = {
+                    weeks: 22,
+                    days: 4,
+                    due_date: "2026-06-10",
+                    trimester: 2,
+                    current_week: 22,
+                    days_remaining: 135
+                };
+                setPregnancyData(mockData);
+                setDevelopmentData({
+                    week: 22,
+                    baby_size_comparison: "Muz kadar",
+                    development: "Bebeğin tüm organları oluştu"
+                });
+            }
         } finally {
             setLoading(false);
             setRefreshing(false);
@@ -66,7 +97,7 @@ export default function HomeScreen() {
 
     const onRefresh = () => {
         setRefreshing(true);
-        loadData();
+        loadData(true);
     };
 
     if (loading && !refreshing) {
@@ -98,7 +129,7 @@ export default function HomeScreen() {
                 refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
             >
                 <View style={styles.header}>
-                    <Text style={styles.greeting}>Hamileliğin Takibi</Text>
+                    <Text style={styles.greeting}>{userName ? `Merhaba ${userName}! 👋` : 'Hamileliğin Takibi'}</Text>
                     <Text style={styles.weekDisplay}>{week}. Hafta • {trimester}. Trimester</Text>
                 </View>
 

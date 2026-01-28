@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://10.43.164.239:9000';
+const API_BASE_URL = 'https://koza-backend-zuf7.onrender.com';
 
 export const fetchForumPosts = async (category = null, query = null, authorId = null) => {
     try {

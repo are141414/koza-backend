@@ -3,7 +3,7 @@ import { API_BASE_URL, ENDPOINTS } from '../config';
 
 const api = axios.create({
     baseURL: API_BASE_URL,
-    timeout: 5000,
+    timeout: 60000,
 });
 
 export const calculatePregnancy = async (lmpDate) => {

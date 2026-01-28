@@ -5,14 +5,15 @@ import {
     StyleSheet,
     ScrollView,
     RefreshControl,
-    SafeAreaView,
     TouchableOpacity,
     ActivityIndicator,
     TextInput,
     Modal,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { fetchForumPosts, createNewPost } from '../api/forum';
 import { getTimeAgo } from '../utils/pregnancy';
+import { getData, storeData, CACHE_KEYS } from '../utils/cache';
 
 export default function ForumScreen() {
     const [posts, setPosts] = useState([]);
@@ -30,13 +31,49 @@ export default function ForumScreen() {
         { id: '4', name: 'Yaşam Tarzı' },
     ];
 
-    const loadPosts = async () => {
+const loadPosts = async (isRefresh = false) => {
+        // Try cache first if not explicitly refreshing
+        if (!isRefresh) {
+            const cachedPosts = await getData(CACHE_KEYS.FORUM_POSTS);
+            if (cachedPosts && Array.isArray(cachedPosts) && cachedPosts.length > 0) {
+                setPosts(cachedPosts);
+                setLoading(false);
+            }
+        }
+
         try {
             const data = await fetchForumPosts();
             if (Array.isArray(data) && data.length > 0) {
                 setPosts(data);
-            } else {
-                // Use mock data if API returns empty
+                storeData(CACHE_KEYS.FORUM_POSTS, data); // Update cache
+            } else if (!posts.length) {
+                // Use mock data if API returns empty and no posts shown
+                const mockData = [
+                    {
+                        id: 1,
+                        title: "Hamilelik İlk Ayı",
+                        content: "İlk ayda neler yaşadınız?",
+                        author: "Ayşe",
+                        created_at: "2026-01-27",
+                        category: "Genel",
+                        comments_count: 5
+                    },
+                    {
+                        id: 2,
+                        title: "Beslenme Önerileri",
+                        content: "Hamilelikte hangi besinler önemli?",
+                        author: "Fatma",
+                        created_at: "2026-01-26",
+                        category: "Beslenme",
+                        comments_count: 12
+                    }
+                ];
+                setPosts(mockData);
+            }
+        } catch (error) {
+            console.error('Forum load error:', error);
+            if (!posts.length) {
+                // Fallback to mock data on error
                 setPosts([
                     {
                         id: 1,
@@ -58,29 +95,6 @@ export default function ForumScreen() {
                     }
                 ]);
             }
-        } catch (error) {
-            console.error('Forum load error:', error);
-            // Fallback to mock data on error
-            setPosts([
-                {
-                    id: 1,
-                    title: "Hamilelik İlk Ayı",
-                    content: "İlk ayda neler yaşadınız?",
-                    author: "Ayşe",
-                    created_at: "2026-01-27",
-                    category: "Genel",
-                    comments_count: 5
-                },
-                {
-                    id: 2,
-                    title: "Beslenme Önerileri",
-                    content: "Hamilelikte hangi besinler önemli?",
-                    author: "Fatma",
-                    created_at: "2026-01-26",
-                    category: "Beslenme",
-                    comments_count: 12
-                }
-            ]);
         } finally {
             setLoading(false);
             setRefreshing(false);
@@ -93,7 +107,7 @@ export default function ForumScreen() {
 
     const onRefresh = () => {
         setRefreshing(true);
-        loadPosts();
+        loadPosts(true);
     };
 
     const handleCreatePost = async () => {

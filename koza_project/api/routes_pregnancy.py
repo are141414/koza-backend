@@ -46,7 +46,7 @@ def get_weekly_development(week: int, db: Session = Depends(get_db)):
     """
     Get baby development info for a specific week from the DB.
     """
-    data = db.query(PregnancyData).filter(PregnancyData.week_number == week).first()
+    data = db.query(all_models.PregnancyData).filter(all_models.PregnancyData.week_number == week).first()
     if not data:
         # Return mock data if DB is empty for demo purposes
         return {
@@ -54,7 +54,7 @@ def get_weekly_development(week: int, db: Session = Depends(get_db)):
             "baby_size": "Unknown (Mock)",
             "description": "Mock description for week " + str(week),
             "mother_advice": "Bol su tüketin!",
-            "image_url": "https://placehold.co/100x100"
+            "image_url": None
         }
     return data
 
@@ -64,7 +64,7 @@ def get_weekly_summary(week: int, db: Session = Depends(get_db)):
     Specific endpoint for Home Screen Baby Status Card.
     Returns: fruit_name, fruit_image_url, progress_percentage, description.
     """
-    data = db.query(PregnancyData).filter(PregnancyData.week_number == week).first()
+    data = db.query(all_models.PregnancyData).filter(all_models.PregnancyData.week_number == week).first()
     
     # Progress Calculation (0-100%)
     progress_percentage = min(100, max(0, int((week / 40) * 100)))
