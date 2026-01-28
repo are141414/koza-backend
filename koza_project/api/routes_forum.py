@@ -32,7 +32,8 @@ class PostResponse(BaseModel):
     title: str
     content: str
     author_id: int
-    author_badge: Optional[str] = None # New Field
+    author_name: Optional[str] = None # Added
+    author_badge: Optional[str] = None
     category_id: str
     created_at: datetime
     
@@ -137,12 +138,14 @@ def get_posts(
         # Fetch author badge (Optimization: could join tables instead)
         author = db.query(all_models.User).filter(all_models.User.id == p.author_id).first()
         badge = author.badge if author else "Yeni Anne"
+        name = author.name if author else "Anonim"
         
         results.append(PostResponse(
             id=p.id,
             title=p.title,
             content=p.content,
             author_id=p.author_id,
+            author_name=name, # Added
             author_badge=badge,
             category_id=p.category, # Returning the stored string as category_id
             created_at=p.created_at
