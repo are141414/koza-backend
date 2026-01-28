@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { storeData, CACHE_KEYS } from '../utils/cache';
+import { registerUser } from '../api/auth';
 
 export default function SetupScreen({ navigation }) {
     const [name, setName] = useState('');
     const [day, setDay] = useState('');
     const [month, setMonth] = useState('');
     const [year, setYear] = useState('');
+    const [loading, setLoading] = useState(false);
 
     const handleSave = async () => {
         if (!name.trim()) {
@@ -28,18 +30,32 @@ export default function SetupScreen({ navigation }) {
              return;
         }
 
-        const profileData = {
-            name: name,
-            lmp: dateString,
-        };
+        setLoading(true);
+        try {
+            // Register User on Backend
+            const authResponse = await registerUser(name);
+            console.log('User registered:', authResponse);
 
-        await storeData(CACHE_KEYS.USER_PROFILE, profileData);
-        
-        // Reset navigation to Main
-        navigation.reset({
-            index: 0,
-            routes: [{ name: 'Main' }],
-        });
+            const profileData = {
+                name: name,
+                lmp: dateString,
+                user_id: authResponse.user_id,
+                email: `user_${authResponse.user_id}@koza.com` // Implied
+            };
+
+            await storeData(CACHE_KEYS.USER_PROFILE, profileData);
+            
+            // Reset navigation to Main
+            navigation.reset({
+                index: 0,
+                routes: [{ name: 'Main' }],
+            });
+        } catch (error) {
+            console.error(error);
+            Alert.alert('Hata', 'Kayıt sırasında bir sorun oluştu. İnternet bağlantınızı kontrol edip tekrar deneyiniz.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (

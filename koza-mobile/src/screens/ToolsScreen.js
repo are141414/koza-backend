@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
@@ -6,24 +6,85 @@ import {
     ScrollView,
     TouchableOpacity,
     TextInput,
+    Alert,
+    ActivityIndicator
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { getData, CACHE_KEYS } from '../utils/cache';
+import { saveKickSession, logWater } from '../api/tools';
 
 export default function ToolsScreen() {
+    const [userId, setUserId] = useState(null);
     const [kickCount, setKickCount] = useState(0);
+    const [kickStartTime, setKickStartTime] = useState(null);
     const [weight, setWeight] = useState('');
     const [waterIntake, setWaterIntake] = useState(0);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        const loadUser = async () => {
+            const profile = await getData(CACHE_KEYS.USER_PROFILE);
+            if (profile && profile.user_id) {
+                setUserId(profile.user_id);
+            }
+        };
+        loadUser();
+    }, []);
 
     const addKick = () => {
+        if (kickCount === 0) {
+            setKickStartTime(new Date());
+        }
         setKickCount(kickCount + 1);
     };
 
     const resetKicks = () => {
-        setKickCount(0);
+        Alert.alert(
+            "Sıfırla", 
+            "Tekme sayacını sıfırlamak istiyor musunuz? İsterseniz kaydedebilirsiniz.",
+            [
+                { text: "İptal", style: "cancel" },
+                { text: "Sıfırla", onPress: () => {
+                    setKickCount(0);
+                    setKickStartTime(null);
+                }},
+                { text: "Kaydet ve Sıfırla", onPress: saveAndResetKicks }
+            ]
+        );
     };
 
-    const addWater = () => {
-        setWaterIntake(waterIntake + 250);
+    const saveAndResetKicks = async () => {
+        if (!userId) {
+            Alert.alert("Hata", "Kullanıcı bulunamadı.");
+            return;
+        }
+        try {
+            setLoading(true);
+            const endTime = new Date();
+            const start = kickStartTime || endTime; // fallback if single kick
+            await saveKickSession(userId, kickCount, start.toISOString(), endTime.toISOString());
+            Alert.alert("Başarılı", "Tekme seansı kaydedildi.");
+            setKickCount(0);
+            setKickStartTime(null);
+        } catch (error) {
+            Alert.alert("Hata", "Kaydedilemedi.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const addWater = async () => {
+        const newAmount = waterIntake + 250;
+        setWaterIntake(newAmount);
+        
+        if (userId) {
+            try {
+                // Log single glass (250ml)
+                await logWater(userId, 250);
+            } catch (error) {
+                console.error("Failed to log water");
+            }
+        }
     };
 
     return (
@@ -32,6 +93,7 @@ export default function ToolsScreen() {
                 <View style={styles.header}>
                     <Text style={styles.title}>Araçlar</Text>
                     <Text style={styles.subtitle}>Hamileliğini takip et</Text>
+                    {loading && <ActivityIndicator size="small" color="#FF9A9E" />}
                 </View>
 
                 {/* Kick Counter */}
@@ -39,6 +101,11 @@ export default function ToolsScreen() {
                     <Text style={styles.cardTitle}>👶 Tekme Sayar</Text>
                     <Text style={styles.kickCount}>{kickCount}</Text>
                     <Text style={styles.kickLabel}>tekme</Text>
+                    {kickStartTime && (
+                        <Text style={styles.timerText}>
+                            Başlangıç: {kickStartTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                        </Text>
+                    )}
 
                     <View style={styles.buttonGroup}>
                         <TouchableOpacity style={styles.button} onPress={addKick}>
