@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hastane Çantası - Koza</title>
+    <link rel="stylesheet" href="/ui/css/style.css">
+    <style>
+        .bag-body {
+            background: #FFF3E0;
+            /* Soft Orange/Peach tint */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding-bottom: 80px;
+            /* Space for fixed bottom bar */
+        }
+
+        .header {
+            background: white;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        /* Tabs */
+        .tabs-container {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            padding: 1.5rem 1rem;
+        }
+
+        .tab-btn {
+            background: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            font-weight: 600;
+            color: #888;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            background: #FF9800;
+            /* Orange Accent */
+            color: white;
+            box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .list-container {
+            padding: 0 1rem;
+            max-width: 600px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .checklist-item {
+            background: white;
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            transition: all 0.2s;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+            position: relative;
+        }
+
+        .checklist-item:active {
+            transform: scale(0.98);
+        }
+
+        /* Custom Checkbox */
+        .custom-checkbox {
+            width: 24px;
+            height: 24px;
+            border: 2px solid #FFCC80;
+            border-radius: 6px;
+            margin-right: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: all 0.2s;
+        }
+
+        .custom-checkbox.checked {
+            background: #FF9800;
+            border-color: #FF9800;
+        }
+
+        .custom-checkbox i {
+            color: white;
+            font-size: 14px;
+            display: none;
+        }
+
+        .custom-checkbox.checked i {
+            display: block;
+        }
+
+        .item-text {
+            flex: 1;
+            font-size: 1rem;
+            color: #333;
+            transition: color 0.2s;
+        }
+
+        .item-text.checked {
+            text-decoration: line-through;
+            color: #AAA;
+        }
+
+        /* Add Item Bar */
+        .add-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 1rem;
+            box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.05);
+            display: flex;
+            gap: 0.5rem;
+            z-index: 100;
+        }
+
+        .add-input {
+            flex: 1;
+            padding: 0.8rem 1.2rem;
+            border: 2px solid #FFF3E0;
+            border-radius: 25px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .add-input:focus {
+            border-color: #FF9800;
+        }
+
+        .add-btn {
+            background: #FF9800;
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(255, 152, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+
+<body class="bag-body">
+
+    <div class="header">
+        <button class="floating-back-btn" onclick="history.back()"
+            style="position:static; margin-right:1rem; background:rgba(0,0,0,0.05);">←</button>
+        <h2 style="margin:0; color:#E65100;">Hastane Çantası</h2>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs-container">
+        <button class="tab-btn active" onclick="switchTab('mom')">Anne</button>
+        <button class="tab-btn" onclick="switchTab('baby')">Bebek</button>
+        <button class="tab-btn" onclick="switchTab('companion')">Refakatçi</button>
+    </div>
+
+    <!-- List -->
+    <div class="list-container" id="list-container">
+        <!-- Items will be injected here -->
+    </div>
+
+    <!-- Add Item -->
+    <div class="add-bar">
+        <input type="text" id="new-item-input" class="add-input" placeholder="Yeni ne ekleyelim?">
+        <button class="add-btn" onclick="addItem()">+</button>
+    </div>
+
+    <script>
+        // Default Data Structure
+        const DEFAULT_DATA = {
+            mom: [
+                { id: 1, text: "Gecelik / Pijama Takımı (2-3 adet)", checked: false },
+                { id: 2, text: "Emzirme Sütyeni", checked: false },
+                { id: 3, text: "Kişisel Bakım Malzemeleri", checked: false },
+                { id: 4, text: "Hastane Evrakları & Kimlik", checked: false },
+                { id: 5, text: "Terlik (Kaymaz Tabanlı)", checked: false }
+            ],
+            baby: [
+                { id: 11, text: "Hastane Çıkış Seti", checked: false },
+                { id: 12, text: "Bebek Bezi (1 paket)", checked: false },
+                { id: 13, text: "Islak Mendil / Pamuk", checked: false },
+                { id: 14, text: "Pişik Kremi", checked: false },
+                { id: 15, text: "Müslin Örtü / Battaniye", checked: false }
+            ],
+            companion: [
+                { id: 21, text: "Rahat Kıyafetler", checked: false },
+                { id: 22, text: "Şarj Aleti / Powerbank", checked: false },
+                { id: 23, text: "Atıştırmalıklar", checked: false },
+                { id: 24, text: "Kişisel ilaçlar", checked: false }
+            ]
+        };
+
+        let currentTab = 'mom';
+        let bagData = {};
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData();
+            renderList();
+        });
+
+        function loadData() {
+            const stored = localStorage.getItem('koza_hospital_bag');
+            if (stored) {
+                bagData = JSON.parse(stored);
+                // Merge defaults if strict keys needed, for now trust storage
+            } else {
+                bagData = JSON.parse(JSON.stringify(DEFAULT_DATA)); // Deep copy
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('koza_hospital_bag', JSON.stringify(bagData));
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+
+            // Update UI Tabs
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent.toLowerCase().includes(
+                    tab === 'mom' ? 'anne' : (tab === 'baby' ? 'bebek' : 'refakat')
+                )) {
+                    btn.classList.add('active');
+                }
+            });
+
+            renderList();
+        }
+
+        function renderList() {
+            const container = document.getElementById('list-container');
+            container.innerHTML = '';
+
+            const items = bagData[currentTab] || [];
+
+            items.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'checklist-item';
+                div.onclick = () => toggleCheck(index);
+
+                div.innerHTML = `
+                    <div class="custom-checkbox ${item.checked ? 'checked' : ''}">
+                        <i>✔</i>
+                    </div>
+                    <div class="item-text ${item.checked ? 'checked' : ''}">${item.text}</div>
+                `;
+
+                container.appendChild(div);
+            });
+        }
+
+        function toggleCheck(index) {
+            bagData[currentTab][index].checked = !bagData[currentTab][index].checked;
+            saveData();
+            renderList();
+        }
+
+        function addItem() {
+            const input = document.getElementById('new-item-input');
+            const text = input.value.trim();
+
+            if (!text) return;
+
+            bagData[currentTab].push({
+                id: Date.now(),
+                text: text,
+                checked: false
+            });
+
+            saveData();
+            renderList();
+            input.value = '';
+
+            // Scroll to bottom
+            setTimeout(() => {
+                window.scrollTo(0, document.body.scrollHeight);
+            }, 100);
+        }
+    </script>
+</body>
+
+</html>

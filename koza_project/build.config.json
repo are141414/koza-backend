@@ -1,0 +1,39 @@
+{
+    "app": {
+        "name": "Koza",
+        "id": "com.koza.happymom.clone",
+        "version": "1.0.0",
+        "build": 1,
+        "description": "Sevgiyle Büyüyoruz... Hamilelik Takip Uygulaması",
+        "author": "Antigravity User",
+        "email": "support@kozaapp.com"
+    },
+    "targets": [
+        "android",
+        "ios"
+    ],
+    "build_settings": {
+        "orientation": "portrait",
+        "fullscreen": false,
+        "background_color": "#FF9A9E",
+        "splash_screen_duration": 3000,
+        "permissions": [
+            "CAMERA",
+            "READ_EXTERNAL_STORAGE",
+            "WRITE_EXTERNAL_STORAGE",
+            "INTERNET",
+            "ACCESS_NETWORK_STATE"
+        ]
+    },
+    "paths": {
+        "web_root": "ui",
+        "status_bar_style": "light",
+        "icon": "ui/icons/icon.png",
+        "splash": "ui/splash/splash.png"
+    },
+    "optimization": {
+        "minify_js": true,
+        "minify_css": true,
+        "remove_console": true
+    }
+}

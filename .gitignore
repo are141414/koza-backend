@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# Mobile
+node_modules/
+.expo/
+*.apk
+*.aab
+
+# OS
+.DS_Store
+Thumbs.db

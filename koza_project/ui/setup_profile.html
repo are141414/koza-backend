@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profil Kaydı - Koza</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .form-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 2.5rem;
+            border-radius: 30px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            color: #FF7077;
+            margin: 0 0 0.5rem 0;
+            font-size: 1.8rem;
+        }
+
+        .header p {
+            color: #888;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        .input-group {
+            margin-bottom: 1.2rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #555;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #EEE;
+            border-radius: 15px;
+            font-size: 1rem;
+            font-family: inherit;
+            background: #FAFAFA;
+            transition: all 0.3s;
+            box-sizing: border-box;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: #FF9A9E;
+            background: white;
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(255, 154, 158, 0.1);
+        }
+
+        /* Calculation Preview */
+        .calc-preview {
+            background: #E3F2FD;
+            color: #1976D2;
+            padding: 1rem;
+            border-radius: 15px;
+            text-align: center;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            display: none;
+            /* Hidden by default */
+            font-size: 0.95rem;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 1.2rem;
+            background: #FF9A9E;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(255, 154, 158, 0.3);
+            transition: transform 0.2s, background 0.2s;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            background: #FF8086;
+        }
+
+        .btn-submit:active {
+            transform: scale(0.98);
+        }
+
+        .optional-label {
+            font-weight: 400;
+            color: #aaa;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="form-container">
+        <div class="header">
+            <h1>Aramıza Hoş Geldin!</h1>
+            <p>Sana ve bebeğine özel bir deneyim hazırlamamız için birkaç bilgiye ihtiyacımız var.</p>
+        </div>
+
+        <form id="profile-form" onsubmit="handleSubmit(event)">
+
+            <div class="input-group">
+                <label>İsim Soyisim</label>
+                <input type="text" id="full-name" placeholder="Adınız Soyadınız" required>
+            </div>
+
+            <div class="input-group">
+                <label>Kullanıcı Adı <span class="optional-label">(Forum Takma Adı)</span></label>
+                <input type="text" id="username" placeholder="@superanne" required>
+            </div>
+
+            <div class="input-group">
+                <label>Son Adet Tarihi (SAT)</label>
+                <input type="date" id="lmp-date" required onchange="calculatePreview(this.value)">
+            </div>
+
+            <div class="calc-preview" id="week-preview">
+                <!-- Dynamic text will appear here -->
+            </div>
+
+            <div class="input-group">
+                <label>Konum</label>
+                <div style="display:flex; gap:0.5rem;">
+                    <select id="city" style="flex:1;" required>
+                        <option value="" disabled selected>İl</option>
+                        <option value="Bolu">Bolu</option>
+                        <option value="İstanbul">İstanbul</option>
+                        <option value="Ankara">Ankara</option>
+                        <option value="İzmir">İzmir</option>
+                        <option value="Diğer">Diğer</option>
+                    </select>
+                    <select id="district" style="flex:1;" required>
+                        <option value="" disabled selected>İlçe</option>
+                        <option value="Dörtdivan">Dörtdivan</option>
+                        <option value="Merkez">Merkez</option>
+                        <option value="Gerede">Gerede</option>
+                        <option value="Diğer">Diğer</option>
+                    </select>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-submit">Bebeğimi Keşfetmeye Başla ✨</button>
+        </form>
+    </div>
+
+    <script>
+        const MOCK_USER_ID = 1;
+
+        function calculatePreview(dateStr) {
+            if (!dateStr) return;
+
+            const lmp = new Date(dateStr);
+            const today = new Date();
+
+            // Difference in time
+            const diffTime = Math.abs(today - lmp);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            const weeks = Math.floor(diffDays / 7);
+            const days = diffDays % 7;
+
+            const previewEl = document.getElementById('week-preview');
+
+            if (weeks > 42) {
+                previewEl.style.display = 'block';
+                previewEl.style.background = '#FFEBEE';
+                previewEl.style.color = '#D32F2F';
+                previewEl.innerText = "⚠️ Girilen tarih çok eski (42+ hafta).";
+            } else if (today < lmp) {
+                previewEl.style.display = 'block';
+                previewEl.style.background = '#FFEBEE';
+                previewEl.style.color = '#D32F2F';
+                previewEl.innerText = "⚠️ Gelecek bir tarih seçtiniz.";
+            } else {
+                previewEl.style.display = 'block';
+                previewEl.style.background = '#E3F2FD';
+                previewEl.style.color = '#1976D2';
+                previewEl.innerText = `Hesaplanan: ${weeks} Haftalık Hamile 👶`;
+            }
+        }
+
+        async function handleSubmit(e) {
+            e.preventDefault();
+
+            const fullName = document.getElementById('full-name').value;
+            const username = document.getElementById('username').value;
+            const lmp = document.getElementById('lmp-date').value;
+            const city = document.getElementById('city').value;
+            const district = document.getElementById('district').value;
+
+            // Basic Validation
+            if (!fullName || !username || !lmp || !city || !district) {
+                alert("Lütfen tüm alanları doldurunuz.");
+                return;
+            }
+
+            const payload = {
+                user_id: MOCK_USER_ID,
+                last_period_date: lmp,
+                city: city,
+                district: district,
+                // Passing FullName and Username assuming backend might store them or we store in profile fields
+                // For now, mapping 'baby_name' logic to 'name' update for User if supported
+                // or just sending what we can.
+            };
+
+            // Since backend schema is strict:
+            // 1. We update profile fields we know exist
+            try {
+                const res = await fetch('http://127.0.0.1:8000/api/pregnancy/profile/update', {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.warning) {
+                        alert(data.warning);
+                    }
+                    // Success -> Dashboard
+                    window.location.href = 'index.html';
+                } else {
+                    const err = await res.json(); // Standard FastAPI error
+                    alert(err.detail || "Bir hata oluştu.");
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Sunucuyla bağlantı kurulamadı.");
+            }
+        }
+    </script>
+</body>
+
+</html>

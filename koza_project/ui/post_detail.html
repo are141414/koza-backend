@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Topic Detail - Koza</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+
+<body class="detail-page-body">
+
+    <header>
+        <button class="btn-icon" onclick="history.back()">←</button>
+        <h1>Topic Detail</h1>
+        <div style="width:24px"></div> <!-- Spacer for centering -->
+    </header>
+
+    <main class="detail-container">
+        <!-- Main Post Content -->
+        <section class="card post-hero-card" id="post-hero">
+            <h2 id="detail-title">Loading...</h2>
+            <div class="card-header">
+                <div class="author-avatar" style="background:#ddd"></div>
+                <span class="author-name" id="detail-author">...</span>
+                <span class="post-meta-time" id="detail-time">...</span>
+            </div>
+            <p class="post-content-full" id="detail-content">...</p>
+        </section>
+
+        <!-- Comments Section -->
+        <h3 class="section-title">Comments</h3>
+        <div class="comments-list" id="comments-list">
+            <!-- Dynamic Comments -->
+        </div>
+
+        <!-- Padding for bottom input -->
+        <div style="height: 80px;"></div>
+    </main>
+
+    <!-- Sticky Input Area -->
+    <footer class="comment-input-bar">
+        <input type="text" id="comment-input" placeholder="Write a comment..." />
+        <button class="btn-send" onclick="submitComment()">➤</button>
+    </footer>
+
+    <script src="js/app.js"></script>
+    <script>
+        // Simple inline init for detail page to parse ID
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const postId = urlParams.get('id');
+            if (postId) {
+                loadPostDetails(postId);
+            }
+        });
+    </script>
+</body>
+
+</html>

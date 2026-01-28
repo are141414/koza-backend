@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ayarlar - Koza</title>
+    <link rel="stylesheet" href="/ui/css/style.css">
+    <style>
+        .settings-body {
+            background: #FAFAFA;
+            padding: 2rem 1rem;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .settings-group {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2rem;
+        }
+
+        .group-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #444;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #F0F0F0;
+        }
+
+        .settings-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid #f9f9f9;
+        }
+
+        .settings-item:last-child {
+            border-bottom: none;
+        }
+
+        .settings-description {
+            font-size: 0.85rem;
+            color: #888;
+            margin-top: 0.2rem;
+        }
+
+        /* Toggle Switch */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 26px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ECEFF1;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        input:checked+.slider {
+            background-color: #FF9A9E;
+            /* App Primary Color */
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(24px);
+        }
+
+        /* Buttons */
+        .action-btn {
+            width: 100%;
+            padding: 1rem;
+            border-radius: 12px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .btn-export {
+            background: #E3F2FD;
+            color: #1976D2;
+        }
+
+        .btn-reset {
+            background: #FFEBEE;
+            color: #D32F2F;
+        }
+
+        .btn-logout {
+            background: #ECEFF1;
+            color: #546E7A;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+
+<body class="settings-body">
+
+    <div class="header">
+        <button class="floating-back-btn" onclick="history.back()"
+            style="position:static; margin-right:1rem; background:white;">←</button>
+        <h2 style="margin:0; color:#333;">Ayarlar</h2>
+    </div>
+
+    <!-- Notifications -->
+    <div class="settings-group">
+        <div class="group-title">🔔 Bildirimler</div>
+
+        <div class="settings-item">
+            <div>
+                <div style="font-weight:600;">Su Hatırlatıcı</div>
+                <div class="settings-description">Hareketsizken 2 saatte bir hatırlat</div>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="toggle-water" onchange="updateSettings()">
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div class="settings-item">
+            <div>
+                <div style="font-weight:600;">Forum Cevapları</div>
+                <div class="settings-description">Biri sana cevap verdiğinde bildir</div>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="toggle-forum" onchange="updateSettings()">
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div class="settings-item">
+            <div>
+                <div style="font-weight:600;">Haftalık Özet</div>
+                <div class="settings-description">Haftalık bebek gelişimi bilgileri</div>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="toggle-weekly" onchange="updateSettings()">
+                <span class="slider"></span>
+            </label>
+        </div>
+    </div>
+
+    <!-- Privacy -->
+    <div class="settings-group">
+        <div class="group-title">🔒 Gizlilik</div>
+
+        <div class="settings-item">
+            <div>
+                <div style="font-weight:600;">Otomatik Anonim</div>
+                <div class="settings-description">Forumda hep anonim paylaş</div>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="toggle-anon" onchange="updateSettings()">
+                <span class="slider"></span>
+            </label>
+        </div>
+    </div>
+
+    <!-- Data Management -->
+    <div class="settings-group">
+        <div class="group-title">💾 Veri Yönetimi</div>
+
+        <button class="action-btn btn-export" onclick="exportData()">
+            📥 Verilerimi Dışa Aktar
+        </button>
+
+        <button class="action-btn btn-reset" onclick="resetData()">
+            🗑️ Uygulama Verilerini Sıfırla
+        </button>
+    </div>
+
+    <button class="action-btn btn-logout" onclick="alert('Çıkış yapıldı')">Çıkış Yap</button>
+
+    <script>
+        const MOCK_USER_ID = 1;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSettings();
+        });
+
+        async function loadSettings() {
+            try {
+                const res = await fetch(`http://127.0.0.1:8000/api/tools/settings/${MOCK_USER_ID}`);
+                const data = await res.json();
+
+                document.getElementById('toggle-water').checked = data.water_reminder;
+                document.getElementById('toggle-forum').checked = data.forum_notification;
+                document.getElementById('toggle-weekly').checked = data.weekly_notification;
+                document.getElementById('toggle-anon').checked = data.auto_anonymous;
+            } catch (e) {
+                console.error("Failed to load settings", e);
+            }
+        }
+
+        async function updateSettings() {
+            const payload = {
+                user_id: MOCK_USER_ID,
+                water_reminder: document.getElementById('toggle-water').checked,
+                forum_notification: document.getElementById('toggle-forum').checked,
+                weekly_notification: document.getElementById('toggle-weekly').checked,
+                auto_anonymous: document.getElementById('toggle-anon').checked
+            };
+
+            try {
+                await fetch('http://127.0.0.1:8000/api/tools/settings/update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                console.log("Settings saved");
+            } catch (e) {
+                console.error("Save failed", e);
+                alert("Ayarlar kaydedilemedi");
+            }
+        }
+
+        async function resetData() {
+            if (!confirm("⚠️ EMİN MİSİNİZ? Tüm su, tekme ve kilo verileriniz silinecek. Bu işlem geri alınamaz.")) return;
+
+            try {
+                const res = await fetch(`http://127.0.0.1:8000/api/tools/settings/reset-data?user_id=${MOCK_USER_ID}`, { method: 'POST' });
+                if (res.ok) alert("Tüm veriler sıfırlandı.");
+            } catch (e) { console.error(e); }
+        }
+
+        async function exportData() {
+            try {
+                const res = await fetch(`http://127.0.0.1:8000/api/tools/settings/export-data/${MOCK_USER_ID}`);
+                if (res.ok) {
+                    const blob = await res.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `koza_data_export_user_${MOCK_USER_ID}.json`;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                }
+            } catch (e) { console.error(e); }
+        }
+    </script>
+</body>
+
+</html>

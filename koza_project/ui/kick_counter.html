@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tekme Sayar - Koza</title>
+    <link rel="stylesheet" href="/ui/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        .kick-body {
+            background: linear-gradient(135deg, #E1BEE7, #F3E5F5);
+            /* Pastel Lilac/Purple */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 1rem;
+            box-sizing: border-box;
+            color: #4A148C;
+        }
+
+        .header {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .timer-display {
+            font-size: 3.5rem;
+            font-weight: 300;
+            font-variant-numeric: tabular-nums;
+            margin: 2rem 0;
+            color: #6A1B9A;
+        }
+
+        .counter-label {
+            font-size: 1.2rem;
+            opacity: 0.7;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .counter-value {
+            font-size: 4rem;
+            font-weight: 700;
+            margin: 0.5rem 0 3rem 0;
+            color: #4A148C;
+        }
+
+        /* Big Kick Button */
+        .kick-btn-container {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .kick-btn {
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            border: none;
+            background: white;
+            box-shadow: 0 10px 30px rgba(106, 27, 154, 0.2);
+            cursor: pointer;
+            transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 4rem;
+            position: relative;
+            z-index: 10;
+        }
+
+        .kick-btn:active {
+            transform: scale(0.92);
+            box-shadow: 0 5px 15px rgba(106, 27, 154, 0.2);
+        }
+
+        .kick-ripple {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.6);
+            transform: scale(1);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .kick-ripple.animate {
+            animation: ripple 0.6s ease-out;
+        }
+
+        @keyframes ripple {
+            0% {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: scale(1.5);
+                opacity: 0;
+            }
+        }
+
+        .btn-controls {
+            margin-top: auto;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .secondary-btn {
+            background: rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            padding: 0.8rem 1.5rem;
+            border-radius: 30px;
+            color: #4A148C;
+            font-weight: 600;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body class="kick-body">
+
+    <div class="header">
+        <button class="floating-back-btn" onclick="history.back()"
+            style="position:static; background:rgba(255,255,255,0.5);">←</button>
+        <h2 style="flex:1; text-align:center; margin:0; padding-right:40px;">Tekme Sayar</h2>
+    </div>
+
+    <!-- Timer -->
+    <div class="timer-display" id="timer">00:00</div>
+
+    <!-- Warning Message Container -->
+    <div id="warning-msg"
+        style="display:none; color: #D32F2F; background: #FFEBEE; padding: 1rem; border-radius: 10px; margin-bottom: 1rem; text-align: center; max-width: 80%;">
+        Bebeğin biraz dinleniyor olabilir. Eğer endişeleniyorsan doktoruna danışabilirsin. 🩺
+    </div>
+
+    <!-- Count -->
+    <div style="text-align:center;">
+        <div class="counter-label">Toplam Tekme</div>
+        <div class="counter-value" id="count-display">0</div>
+    </div>
+
+    <!-- Main Button -->
+    <div class="kick-btn-container">
+        <div class="kick-ripple" id="ripple-effect"></div>
+        <button class="kick-btn" onclick="recordKick()">
+            👣
+        </button>
+    </div>
+
+    <div class="btn-controls">
+        <button class="secondary-btn" onclick="resetSession()">Sıfırla</button>
+        <button class="secondary-btn" onclick="saveSession()"
+            style="background:#4A148C; color:white; border:none;">Bitir & Kaydet</button>
+    </div>
+
+    <script>
+        let count = 0;
+        let startTime = null;
+        let timerInterval = null;
+        let isRunning = false;
+
+        function recordKick() {
+            // Start timer on first kick if not running
+            if (!isRunning) {
+                startTimer();
+            }
+
+            count++;
+            document.getElementById('count-display').textContent = count;
+
+            // Animation
+            const ripple = document.getElementById('ripple-effect');
+            ripple.classList.remove('animate');
+            void ripple.offsetWidth; // Trigger reflow
+            ripple.classList.add('animate');
+
+            // Quick feedback logic (e.g. goal reached)
+            if (count === 10) {
+                // Auto prompt to save
+                if (confirm("Tebrikler! 10 tekmeye ulaştınız. Oturumu kaydedip bitirmek ister misiniz?")) {
+                    saveSession();
+                }
+            }
+        }
+
+        function startTimer() {
+            isRunning = true;
+            startTime = Date.now();
+
+            // Update immediately
+            updateTimerText();
+
+            timerInterval = setInterval(() => {
+                updateTimerText();
+            }, 1000);
+        }
+
+        function updateTimerText() {
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+
+            // Check for 2 hours (7200 seconds)
+            if (elapsed >= 7200 && count < 10) {
+                document.getElementById('warning-msg').style.display = 'block';
+            }
+
+            const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+            const seconds = (elapsed % 60).toString().padStart(2, '0');
+            document.getElementById('timer').textContent = `${minutes}:${seconds}`;
+        }
+
+        function resetSession() {
+            clearInterval(timerInterval);
+            isRunning = false;
+            count = 0;
+            startTime = null;
+            document.getElementById('count-display').textContent = '0';
+            document.getElementById('timer').textContent = '00:00';
+        }
+
+        function saveSession() {
+            if (count === 0) return;
+
+            clearInterval(timerInterval);
+            const duration = document.getElementById('timer').textContent;
+
+            if (confirm(`Oturum kaydedilsin mi? ${duration} sürede ${count} tekme.`)) {
+                // Here we would call Backend API to save KickLog
+                // await fetch('/api/tools/kick-counter', ...)
+                alert("Oturum Kaydedildi! (Demo)");
+                resetSession();
+            } else {
+                // Resume logic if needed, or just stop
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Su Takibi - Koza</title>
+    <link rel="stylesheet" href="/ui/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        .water-body {
+            background: #E3F2FD;
+            /* Light Blue bg */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 1rem;
+            box-sizing: border-box;
+        }
+
+        .tracker-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .tracker-header h1 {
+            color: #1565C0;
+            margin: 0;
+            font-size: 1.8rem;
+        }
+
+        .goal-info {
+            background: white;
+            padding: 1rem 2rem;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.1);
+            margin-top: 1rem;
+            display: flex;
+            gap: 2rem;
+            text-align: center;
+        }
+
+        .stat-item h4 {
+            margin: 0;
+            color: #90CAF9;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+        }
+
+        .stat-item span {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1976D2;
+        }
+
+        /* Glass Graphic */
+        .glass-container {
+            margin: 3rem 0;
+            position: relative;
+        }
+
+        .glass {
+            width: 160px;
+            height: 280px;
+            border: 4px solid white;
+            border-top: none;
+            border-radius: 0 0 30px 30px;
+            background: rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(33, 150, 243, 0.2);
+        }
+
+        /* Water Fill */
+        .water-fill {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 0%;
+            /* Dynamic */
+            background: linear-gradient(to top, #2196F3, #64B5F6);
+            transition: height 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Wave effect at top of water */
+        .water-fill::after {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 0;
+            width: 200%;
+            height: 20px;
+            background: #64B5F6;
+            border-radius: 50%;
+            opacity: 0.5;
+            animation: wave 3s infinite linear;
+        }
+
+        @keyframes wave {
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+
+        .glass-highlight {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 10px;
+            height: 80%;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            z-index: 10;
+        }
+
+        /* Percentage Text centered in glass */
+        .glass-percentage {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            z-index: 20;
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: auto;
+        }
+
+        .add-btn {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            border: none;
+            background: white;
+            color: #1976D2;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(33, 150, 243, 0.2);
+            transition: transform 0.2s, background 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .add-btn:active {
+            transform: scale(0.95);
+        }
+
+        .add-btn:hover {
+            background: #E3F2FD;
+        }
+
+        .add-btn span {
+            font-size: 0.7rem;
+            color: #90CAF9;
+            font-weight: normal;
+        }
+
+        .reset-btn {
+            margin-top: 2rem;
+            background: none;
+            border: none;
+            color: #90CAF9;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body class="water-body">
+
+    <!-- Back Button -->
+    <button class="floating-back-btn" onclick="history.back()">←</button>
+
+    <div class="tracker-header">
+        <h1>Su Takibi</h1>
+        <div class="goal-info">
+            <div class="stat-item">
+                <h4>Hedef</h4>
+                <span id="goal-display">2500ml</span>
+            </div>
+            <div class="stat-item">
+                <h4>Kalan</h4>
+                <span id="remaining-display">2500ml</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Center Glass -->
+    <div class="glass-container">
+        <div class="glass">
+            <div class="glass-highlight"></div>
+            <div class="water-fill" id="water-fill"></div>
+            <div class="glass-percentage" id="percentage-display">0%</div>
+        </div>
+    </div>
+
+    <!-- Quick Add Buttons -->
+    <div class="controls">
+        <button class="add-btn" onclick="addWater(200)">
+            +200
+            <span>ml</span>
+        </button>
+        <button class="add-btn" onclick="addWater(330)">
+            +330
+            <span>ml</span>
+        </button>
+        <button class="add-btn" onclick="addWater(500)">
+            +500
+            <span>ml</span>
+        </button>
+    </div>
+
+    </div>
+
+    <button class="reset-btn" onclick="resetWater()">Günü Sıfırla</button>
+
+    <script>
+        // Simple client-side logic for demo
+        let currentIntake = 0;
+        const GOAL = 2500;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load from local storage if implemented, else 0
+            updateUI();
+        });
+
+        function addWater(amount) {
+            currentIntake += amount;
+            if (currentIntake > GOAL * 1.5) {
+                // Cap visual overflow mainly
+                // But let them track more if they want, just visual cap
+            }
+            updateUI();
+        }
+
+        function resetWater() {
+            currentIntake = 0;
+            updateUI();
+        }
+
+        function updateUI() {
+            // Calculations
+            const percentage = Math.min((currentIntake / GOAL) * 100, 100);
+            const remaining = Math.max(GOAL - currentIntake, 0);
+
+            // DOM Updates
+            document.getElementById('water-fill').style.height = `${percentage}%`;
+            document.getElementById('percentage-display').textContent = `${Math.floor(percentage)}%`;
+            document.getElementById('remaining-display').textContent = `${remaining}ml`;
+
+            // Text color change if full
+            if (percentage >= 100) {
+                document.getElementById('percentage-display').textContent = "🎉";
+            }
+        }
+    </script>
+</body>
+
+</html>

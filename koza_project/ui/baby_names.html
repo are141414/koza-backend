@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>İsim Rehberi - Koza</title>
+    <link rel="stylesheet" href="/ui/css/style.css">
+    <style>
+        .names-body {
+            background: #E8EAF6;
+            /* Soft Indigo */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding-bottom: 2rem;
+        }
+
+        .header {
+            background: white;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        /* Search & Filter Bar */
+        .controls-container {
+            background: white;
+            padding: 0 1rem 1rem 1rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 60px;
+            /* Below header */
+            z-index: 99;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 2px solid #E8EAF6;
+            border-radius: 15px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            margin-bottom: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .search-box:focus {
+            border-color: #3F51B5;
+        }
+
+        .filters {
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+        }
+
+        .filter-btn {
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 20px;
+            background: #F5F5F5;
+            color: #666;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .filter-btn.active {
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .btn-girl.active {
+            background: #F06292;
+        }
+
+        .btn-boy.active {
+            background: #42A5F5;
+        }
+
+        .btn-unisex.active {
+            background: #AB47BC;
+        }
+
+        .btn-fav.active {
+            background: #FFCA28;
+            color: #5D4037;
+        }
+
+        /* Name List */
+        .names-grid {
+            padding: 1rem;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .name-card {
+            background: white;
+            padding: 1rem;
+            border-radius: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+            transition: transform 0.2s;
+        }
+
+        .name-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .name-info h3 {
+            margin: 0 0 0.3rem 0;
+            font-size: 1.2rem;
+        }
+
+        .name-info p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: #777;
+        }
+
+        .name-gender {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+
+        .gender-K {
+            background: #F06292;
+        }
+
+        .gender-E {
+            background: #42A5F5;
+        }
+
+        .gender-U {
+            background: #AB47BC;
+        }
+
+        .fav-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #E0E0E0;
+            transition: color 0.2s, transform 0.2s;
+        }
+
+        .fav-btn.active {
+            color: #FFCA28;
+            /* Gold Heart */
+            transform: scale(1.2);
+        }
+    </style>
+</head>
+
+<body class="names-body">
+
+    <div class="header">
+        <button class="floating-back-btn" onclick="history.back()"
+            style="position:static; margin-right:1rem; background:rgba(0,0,0,0.05);">←</button>
+        <h2 style="margin:0; color:#3949AB;">İsim Rehberi</h2>
+    </div>
+
+    <div class="controls-container">
+        <input type="text" class="search-box" id="search-input" placeholder="İsim ara... (örn: Zeynep)">
+        <div class="filters">
+            <button class="filter-btn btn-girl" onclick="filter('K', this)">Kız</button>
+            <button class="filter-btn btn-boy" onclick="filter('E', this)">Erkek</button>
+            <button class="filter-btn btn-unisex" onclick="filter('U', this)">Üniseks</button>
+            <button class="filter-btn btn-fav" onclick="filter('FAV', this)">Favorilerim ⭐</button>
+        </div>
+    </div>
+
+    <div class="names-grid" id="names-container">
+        <!-- Cards -->
+    </div>
+
+    <script>
+        const MOCK_USER_ID = 1;
+        let currentFilter = ''; // '' = All, K, E, U, FAV
+        let searchTerm = '';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchNames();
+
+            // Search Debounce
+            let timeout = null;
+            document.getElementById('search-input').addEventListener('input', (e) => {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => {
+                    searchTerm = e.target.value;
+                    fetchNames();
+                }, 400);
+            });
+        });
+
+        function filter(type, btn) {
+            // Toggle logic or distinct selection
+            if (currentFilter === type) {
+                currentFilter = ''; // Reset
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            } else {
+                currentFilter = type;
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            }
+            fetchNames();
+        }
+
+        async function fetchNames() {
+            let url = `http://127.0.0.1:8000/api/names/?user_id=${MOCK_USER_ID}`;
+
+            if (searchTerm) url += `&search=${searchTerm}`;
+
+            if (currentFilter === 'FAV') {
+                url += `&only_favorites=true`;
+            } else if (currentFilter) {
+                url += `&gender=${currentFilter}`;
+            }
+
+            try {
+                const res = await fetch(url);
+                const data = await res.json();
+                renderNames(data);
+            } catch (e) {
+                console.error("Failed to fetch names", e);
+            }
+        }
+
+        function renderNames(names) {
+            const container = document.getElementById('names-container');
+            container.innerHTML = '';
+
+            if (names.length === 0) {
+                container.innerHTML = '<div style="text-align:center; color:#888; padding:2rem;">İsim bulunamadı.</div>';
+                return;
+            }
+
+            names.forEach(name => {
+                const card = document.createElement('div');
+                card.className = 'name-card';
+                card.innerHTML = `
+                    <div class="name-info">
+                        <h3><span class="name-gender gender-${name.gender}"></span>${name.name}</h3>
+                        <p>${name.meaning}</p>
+                    </div>
+                    <button class="fav-btn ${name.is_favorite ? 'active' : ''}" onclick="toggleFav(${name.id}, this)">
+                        ${name.is_favorite ? '❤️' : '🤍'}
+                    </button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        async function toggleFav(id, btn) {
+            // Optimistic UI
+            const isNowActive = !btn.classList.contains('active');
+            btn.classList.toggle('active');
+            btn.textContent = isNowActive ? '❤️' : '🤍';
+
+            try {
+                const res = await fetch(`http://127.0.0.1:8000/api/names/${id}/favorite?user_id=${MOCK_USER_ID}`, { method: 'POST' });
+                const data = await res.json();
+
+                // If in favorites tab and unfavorited, remove card
+                if (currentFilter === 'FAV' && !isNowActive) {
+                    btn.closest('.name-card').remove();
+                }
+
+            } catch (e) {
+                console.error("Fav failed", e);
+                // Revert
+                btn.classList.toggle('active');
+                btn.textContent = !isNowActive ? '❤️' : '🤍';
+            }
+        }
+    </script>
+</body>
+
+</html>

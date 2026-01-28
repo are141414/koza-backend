@@ -1,0 +1,22 @@
+{
+    "name": "Koza - Happy Mom Clone",
+    "short_name": "Koza",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#FF9A9E",
+    "theme_color": "#FF9A9E",
+    "orientation": "portrait",
+    "description": "Sevgiyle Büyüyoruz... Hamilelik Takip Uygulaması",
+    "icons": [
+        {
+            "src": "https://cdn-icons-png.flaticon.com/512/3468/3468306.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "https://cdn-icons-png.flaticon.com/512/3468/3468306.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}

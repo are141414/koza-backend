@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kilo Takibi - Koza</title>
+    <link rel="stylesheet" href="/ui/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .weight-body {
+            background: #F1F8E9;
+            /* Pastel Green tint */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+            box-sizing: border-box;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .input-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-group label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+
+        .weight-input {
+            border: 2px solid #C5E1A5;
+            border-radius: 12px;
+            padding: 0.8rem;
+            font-size: 1.2rem;
+            width: 100px;
+            outline: none;
+            color: #33691E;
+            font-weight: bold;
+        }
+
+        .save-btn {
+            background: #8BC34A;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(139, 195, 74, 0.3);
+        }
+
+        .chart-container {
+            background: white;
+            padding: 1rem;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2rem;
+            height: 300px;
+            position: relative;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #888;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #558B2F;
+        }
+
+        .gain-positive {
+            color: #E53935;
+        }
+
+        /* Gaining too much? Or just gaining which is normal */
+        /* Actually gaining is normal in pregnancy, let's keep it green or neutral unless extreme */
+    </style>
+</head>
+
+<body class="weight-body">
+
+    <div class="header">
+        <button class="floating-back-btn" onclick="history.back()"
+            style="position:static; margin-right:1rem;">←</button>
+        <h2 style="margin:0; color: #33691E;">Kilo Takibi</h2>
+    </div>
+
+    <!-- Input Area -->
+    <div class="input-card">
+        <div class="input-group">
+            <label>Güncel Kilo (kg)</label>
+            <input type="number" id="weight-input" class="weight-input" step="0.1" placeholder="00.0">
+        </div>
+        <button class="save-btn" onclick="saveWeight()">Kaydet</button>
+    </div>
+
+    <!-- Chart -->
+    <div class="chart-container">
+        <canvas id="weightChart"></canvas>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-label">Başlangıç Kilosu</div>
+            <div class="stat-value" id="start-weight">-- kg</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Toplam Alınan</div>
+            <div class="stat-value" id="total-gain">+0 kg</div>
+        </div>
+    </div>
+
+    <script>
+        const MOCK_USER_ID = 1;
+        let chartInstance = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData();
+        });
+
+        async function loadData() {
+            try {
+                const res = await fetch(`http://127.0.0.1:8000/api/tools/weight/history?user_id=${MOCK_USER_ID}`);
+                const data = await res.json();
+
+                updateUI(data);
+                renderChart(data.history);
+            } catch (e) {
+                console.error("Failed to load weight data", e);
+            }
+        }
+
+        async function saveWeight() {
+            const weight = parseFloat(document.getElementById('weight-input').value);
+            if (!weight || weight <= 0) {
+                alert("Lütfen geçerli bir kilo girin!");
+                return;
+            }
+
+            try {
+                const res = await fetch('http://127.0.0.1:8000/api/tools/weight', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: MOCK_USER_ID, weight_kg: weight })
+                });
+
+                if (res.ok) {
+                    alert("Kilo kaydedildi!");
+                    loadData(); // Refresh chart and stats
+                } else {
+                    alert("Kilo kaydedilemedi.");
+                }
+            } catch (e) {
+                console.error(e);
+                alert("Bağlantı hatası.");
+            }
+        }
+
+        function updateUI(data) {
+            document.getElementById('start-weight').textContent = data.start_weight ? `${data.start_weight} kg` : '-- kg';
+
+            if (data.start_weight && data.current_weight) {
+                const gain = (data.current_weight - data.start_weight).toFixed(1);
+                const sign = gain >= 0 ? '+' : '';
+                document.getElementById('total-gain').textContent = `${sign}${gain} kg`;
+            }
+
+            // Pre-fill input with current weight if available
+            if (data.current_weight) {
+                document.getElementById('weight-input').value = data.current_weight;
+            }
+        }
+
+        function renderChart(history) {
+            const ctx = document.getElementById('weightChart').getContext('2d');
+
+            // Labels: Weeks (e.g., Week 12, Week 13)
+            const labels = history.map(h => `${h.week}. Hafta`);
+            const dataPoints = history.map(h => h.weight);
+
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Kilo (kg)',
+                        data: dataPoints,
+                        borderColor: '#8BC34A',
+                        backgroundColor: 'rgba(139, 195, 74, 0.2)',
+                        borderWidth: 3,
+                        tension: 0.4, // Smooth curve
+                        fill: true,
+                        pointBackgroundColor: '#558B2F',
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            grid: { color: '#f0f0f0' }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

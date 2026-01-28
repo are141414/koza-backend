@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Makale - Koza</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body class="article-body">
+
+    <!-- Parallax Header Image -->
+    <div class="parallax-header" id="article-image"></div>
+
+    <main class="article-container">
+        <!-- Title -->
+        <h1 class="article-title" id="article-title">Makale Yükleniyor...</h1>
+
+        <!-- Meta Info -->
+        <div class="article-meta">
+            <span id="article-category">General</span> • <span id="read-time">3 min read</span>
+        </div>
+
+        <!-- Content -->
+        <div class="article-content" id="article-content">
+            <p>İçerik yükleniyor...</p>
+        </div>
+
+        <!-- Feedback Section -->
+        <div class="article-actions">
+            <button class="btn-like" onclick="toggleLike(this)">
+                <span class="icon">🤍</span> Bunu beğendin mi?
+            </button>
+            <button class="btn-whatsapp" onclick="shareWhatsapp()">
+                <span class="icon">📱</span> Paylaş
+            </button>
+        </div>
+    </main>
+
+    <!-- Floating Back Button -->
+    <button class="floating-back-btn" onclick="history.back()">←</button>
+
+    <script src="js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const type = urlParams.get('type') || 'generic';
+            loadArticleContent(type);
+        });
+
+        function loadArticleContent(type) {
+            // Mock Content Loading based on type
+            const title = document.getElementById('article-title');
+            const content = document.getElementById('article-content');
+            const header = document.getElementById('article-image');
+
+            if (type === 'baby') {
+                title.textContent = "Bebekteki Değişimler: Parmak İzleri ve Duyular";
+                header.style.backgroundImage = "url('https://images.unsplash.com/photo-1519689680058-324335c77eba?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80')"; // Mock Image
+                content.innerHTML = `
+                    <p>Bebeğin hızla büyüyor! Bu hafta gelişiminde önemli bir dönüm noktası. Belki de en heyecan verici değişim, eşsiz parmak izlerinin oluşumu. Parmaklarında ve ayak parmaklarındaki bu minik çizgiler tamamen ona özel ve ömür boyu onunla kalacak.</p>
+                    <p>Fiziksel değişimlerin yanı sıra, bebeğinin duyuları da keskinleşiyor. Artık dış dünyadan gelen boğuk sesleri muhtemelen duyabiliyor. Senin sesin, eşinin sesi ve hatta yüksek sesli müzik bir tepkiye neden olabilir.</p>
+                    <h3>Başka neler oluyor?</h3>
+                    <p>Böbrekleri çalışıyor, amniyotik sıvıyı yutup idrar olarak çıkarıyor. Kulağa tuhaf gelebilir ama bu, sindirim ve boşaltım sistemleri için kritik bir alıştırma.</p>
+                `;
+            } else if (type === 'mom') {
+                title.textContent = "Annedeki Değişimler: Enerji Artışı ve Işıltı";
+                header.style.backgroundImage = "url('https://images.unsplash.com/photo-1512411886835-26a31c5b88a1?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80')";
+                content.innerHTML = `
+                    <p>Hamileliğin "balayı dönemine" hoş geldin! Birçok anne adayı, ilk trimesterin yorgunluğu ve sabah bulantılarının şimdi azaldığını ve yerini bir enerji patlamasına bıraktığını fark eder.</p>
+                    <p>Ayrıca meşhur "hamilelik ışıltısını" da fark edebilirsin. Bu sadece bir efsane değil – artan kan akışı ve yağ üretimi cildinin daha parlak görünmesini sağlayabilir (bazıları için bu birkaç sivilce anlamına gelse de!).</p>
+                `;
+            } else {
+                title.textContent = "Beslenme: Avokadonun Gücü";
+                header.style.backgroundImage = "url('https://images.unsplash.com/photo-1523049673856-38866ea8c3e9?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80')";
+                content.innerHTML = `
+                    <p>Avokado, anne adayları için bir süper besindir. Folat, potasyum ve C vitamini ile doludur. Ancak en belirgin özelliği sağlıklı tekli doymamış yağlardır.</p>
+                    <p>Bu yağlar, bebeğinin cilt ve beyin dokularını oluşturmaya yardımcı olur. Ayrıca, muzdan bile daha fazla olan yüksek potasyum içeriği sayesinde, hamileliğin yaygın bir belirtisi olan bacak kramplarını hafifletmeye yardımcı olabilir.</p>
+                    <p>Salatalara, smoothielere eklemeyi veya sadece kızarmış ekmek üzerinde yemeyi dene!</p>
+                `;
+            }
+        }
+
+        function toggleLike(btn) {
+            if (btn.classList.contains('liked')) {
+                btn.classList.remove('liked');
+                btn.innerHTML = '<span class="icon">🤍</span> Bunu beğendin mi?';
+            } else {
+                btn.classList.add('liked');
+                btn.innerHTML = '<span class="icon">❤️</span> Beğendin!';
+            }
+        }
+
+        function shareWhatsapp() {
+            const text = encodeURIComponent(document.title + " - " + window.location.href);
+            window.open(`https://wa.me/?text=${text}`, '_blank');
+        }
+    </script>
+</body>
+
+</html>

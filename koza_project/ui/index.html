@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Koza - Happy Mom Clone</title>
+    <link rel="stylesheet" href="/ui/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="manifest" href="/ui/manifest.json">
+</head>
+
+<body>
+
+    <!-- SPLASH SCREEN -->
+    <!-- SPLASH SCREEN -->
+    <div id="splash-screen">
+        <div class="splash-content">
+            <img src="/ui/img/logo.png" alt="Koza Logo" class="splash-image">
+        </div>
+    </div>
+
+    <!-- AUTH OVERLAY -->
+    <div id="auth-overlay" style="display:none;">
+        <div class="auth-card">
+            <h1 style="color:#FF9A9E; margin-bottom:2rem;">Hoşgeldin Koza</h1>
+            <input type="text" id="login-email" placeholder="E-posta"
+                style="width:100%; padding:1rem; margin-bottom:1rem; border:2px solid #eee; border-radius:12px;">
+            <button onclick="handleLogin()"
+                style="width:100%; padding:1rem; background:#FF9A9E; color:white; border:none; border-radius:12px; font-weight:bold; font-size:1.1rem;">Giriş
+                Yap / Kayıt Ol</button>
+            <p style="color:#888; margin-top:1rem; font-size:0.9rem;">Demo: Herhangi bir e-posta giriniz.</p>
+        </div>
+    </div>
+
+    <!-- MAIN APP CONTAINER -->
+    <div id="app-container" style="display:none; padding-bottom: 80px;"> <!-- Padding for bottom nav -->
+
+        <!-- === HOME VIEW === -->
+        <div id="view-home" class="view-section">
+            <div class="header-banner">
+                <div class="header-content">
+                    <h1>Harika bir gün, <br>Anne Adayı! 🦋</h1>
+                    <button class="notif-btn" onclick="navigateTo('settings')">🔔</button>
+                </div>
+            </div>
+
+            <main class="dashboard">
+                <!-- Baby Size Widget -->
+                <section class="card baby-size-widget">
+                    <div class="widget-content">
+                        <!-- Left: Visual -->
+                        <div class="baby-visual">
+                            <div class="fruit-circle-image">
+                                <!-- Using emoji as placeholder/visual for now, structured for Image support -->
+                                <span class="fruit-emoji" id="fruit-icon">🍋</span>
+                            </div>
+                        </div>
+
+                        <!-- Right: Text -->
+                        <div class="bsw-text-section">
+                            <h3 class="bsw-title">Bebeğiniz şu an bir <span id="fruit-name">Limon</span> boyutunda</h3>
+                            <p class="bsw-summary" id="dev-short-summary">Bebeğinizin parmak izleri oluşmaya başladı ve
+                                artık
+                                dış sesleri duyabiliyor.</p>
+                        </div>
+                    </div>
+
+                    <!-- Bottom: Progress -->
+                    <div class="bsw-footer">
+                        <div class="bsw-progress-container">
+                            <div class="bsw-progress-bar" id="week-progress-bar" style="width: 30%"></div>
+                        </div>
+                        <div class="bsw-progress-label">Hamilelik: <span id="progress-text">%30</span></div>
+                    </div>
+                </section>
+
+                <!-- Daily Tip Widget -->
+                <section class="card daily-tip-widget">
+                    <div class="tip-content-wrapper">
+                        <div class="tip-icon-box">
+                            <span class="tip-icon">💡</span>
+                        </div>
+                        <div class="tip-text-box">
+                            <h3 class="tip-title">Günün Tavsiyesi</h3>
+                            <p class="tip-quote" id="tip-content">
+                                "Bol su için! Su içmek, bebeğin etrafındaki amniyotik sıvının oluşmasına yardımcı olur."
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Quick Access Grid -->
+                <section class="quick-access-grid">
+                    <div class="quick-item" onclick="navigateTo('water')">
+                        <div class="quick-icon" style="background: #E3F2FD; color: #2196F3;">💧</div>
+                        <span class="quick-label">Su Takibi</span>
+                    </div>
+                    <div class="quick-item" onclick="navigateTo('kick')">
+                        <div class="quick-icon" style="background: #FCE4EC; color: #E91E63;">🦶</div>
+                        <span class="quick-label">Tekme Sayar</span>
+                    </div>
+                    <div class="quick-item" onclick="navigateTo('diary')">
+                        <div class="quick-icon" style="background: #FFF3E0; color: #FF9800;">📖</div>
+                        <span class="quick-label">Günlük</span>
+                    </div>
+                    <div class="quick-item" onclick="switchMainTab('forum')">
+                        <div class="quick-icon" style="background: #E8F5E9; color: #4CAF50;">💬</div>
+                        <span class="quick-label">Forum</span>
+                    </div>
+                </section>
+
+                <!-- Weekly Insights -->
+                <section class="weekly-insights">
+                    <h3 class="section-title">Haftalık Bilgiler</h3>
+
+                    <!-- Card 1: Baby Changes -->
+                    <div class="insight-card" onclick="openInsightModal('baby')">
+                        <div class="insight-icon" style="background: #E3F2FD;">👶</div>
+                        <div class="insight-content">
+                            <h4>Bebekteki Değişimler</h4>
+                            <p id="insight-baby-short">Parmak izleri oluşuyor...</p>
+                        </div>
+                        <div class="insight-arrow">›</div>
+                    </div>
+
+                    <!-- Card 2: Mom Changes -->
+                    <div class="insight-card" onclick="openInsightModal('mom')">
+                        <div class="insight-icon" style="background: #FCE4EC;">🤰</div>
+                        <div class="insight-content">
+                            <h4>Annedeki Değişimler</h4>
+                            <p id="insight-mom-short">Enerjiniz artabilir...</p>
+                        </div>
+                        <div class="insight-arrow">›</div>
+                    </div>
+
+                    <!-- Card 3: Nutrition -->
+                    <div class="insight-card" onclick="openInsightModal('nutrition')">
+                        <div class="insight-icon" style="background: #E8F5E9;">🥑</div>
+                        <div class="insight-content">
+                            <h4>Beslenme İpucu</h4>
+                            <p id="insight-nutrition-short">Sağlıklı yağlar için avokado...</p>
+                        </div>
+                        <div class="insight-arrow">›</div>
+                    </div>
+                </section>
+
+                <!-- Forum Teaser (Optional, or removed since it's a tab) -->
+                <div class="card" onclick="switchMainTab('forum')"
+                    style="cursor:pointer; text-align:center; padding:1rem;">
+                    <h3>💬 Topluluk Forumu</h3>
+                    <p style="color:#888;">Diğer annelerle sohbete katılın!</p>
+                </div>
+
+        </div> <!-- End View Home -->
+
+        <!-- === TOOLS VIEW === -->
+        <div id="view-tools" class="view-section" style="display:none;">
+            <div class="section-header" style="padding:1rem;">
+                <h2>Araçlar</h2>
+            </div>
+
+            <div class="grid-menu"
+                style="padding:0 1rem; display:grid; grid-template-columns: repeat(2, 1fr); gap:1rem;">
+                <div class="grid-item" onclick="navigateTo('kick')">
+                    <div class="grid-icon">👣</div>
+                    <span>Tekme Sayar</span>
+                </div>
+                <div class="grid-item" onclick="navigateTo('weight')">
+                    <div class="grid-icon">⚖️</div>
+                    <span>Kilo Takibi</span>
+                </div>
+                <div class="grid-item" onclick="navigateTo('water')">
+                    <div class="grid-icon">💧</div>
+                    <span>Su Takibi</span>
+                </div>
+                <div class="grid-item" onclick="navigateTo('hospital')">
+                    <div class="grid-icon">🎒</div>
+                    <span>Hastane Çantası</span>
+                </div>
+                <div class="grid-item" onclick="navigateTo('names')">
+                    <div class="grid-icon">📖</div>
+                    <span>İsim Rehberi</span>
+                </div>
+                <div class="grid-item" onclick="navigateTo('gallery')">
+                    <div class="grid-icon">📸</div>
+                    <span>Fotoğraf Günlüğü</span>
+                </div>
+                <div class="grid-item" onclick="navigateTo('nutrition')">
+                    <div class="grid-icon">🥗</div>
+                    <span>Beslenme</span>
+                </div>
+                <!-- Settings shortcut -->
+                <div class="grid-item" onclick="navigateTo('settings')">
+                    <div class="grid-icon">⚙️</div>
+                    <span>Ayarlar</span>
+                </div>
+            </div>
+        </div>
+        <!-- END TOOLS VIEW -->
+
+        <!-- === FORUM VIEW === -->
+        <div id="view-forum" class="view-section" style="display:none; padding-top:1rem; padding-bottom: 80px;">
+            <div class="forum-header"
+                style="padding:0 1rem; display:flex; justify-content:space-between; align-items:center;">
+                <div style="display:flex; align-items:center; gap:0.5rem;">
+                    <button onclick="switchMainTab('home')"
+                        style="background:none; border:none; font-size:1.5rem; cursor:pointer;">←</button>
+                    <h2 style="margin:0;">Forum</h2>
+                </div>
+                <button class="create-post-btn-small" onclick="openNewTopicModal()"
+                    style="background:#FF9A9E; color:white; border:none; padding:0.5rem 1rem; border-radius:20px;">+
+                    Yeni Konu</button>
+            </div>
+
+            <!-- Search -->
+            <div style="padding:1rem; display:flex; gap:0.5rem;">
+                <input type="text" id="forum-search-page" placeholder="Konu ara..."
+                    style="flex:1; padding:0.8rem; border-radius:15px; border:1px solid #eee;">
+                <button onclick="searchForum(document.getElementById('forum-search-page').value)"
+                    style="background:var(--accent-color); color:white; border:none; padding:0 1.2rem; border-radius:15px; cursor:pointer;">🔍</button>
+            </div>
+
+            <!-- Feed -->
+            <div class="forum-grid" id="forum-feed-page" style="padding:0 1rem;">
+                <!-- Posts injected by JS -->
+            </div>
+        </div>
+        <!-- END FORUM VIEW -->
+
+    </div> <!-- END APP CONTAINER -->
+
+    <!-- BOTTOM NAVIGATION -->
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="switchMainTab('home')">
+            <div class="nav-icon">🏠</div>
+            <span>Ana Sayfa</span>
+        </div>
+        <div class="nav-item" onclick="switchMainTab('forum')">
+            <div class="nav-icon">💬</div>
+            <span>Forum</span>
+        </div>
+        <div class="nav-item" onclick="switchMainTab('tools')">
+            <div class="nav-icon">🧩</div>
+            <span>Araçlar</span>
+        </div>
+        <div class="nav-item" onclick="navigateTo('profile')">
+            <div class="nav-icon">👤</div>
+            <span>Profil</span>
+        </div>
+    </div>
+
+    <!-- Report Modal -->
+    <div id="report-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Report Content ⚠️</h3>
+                <button class="btn-close" onclick="closeReportModal()">×</button>
+            </div>
+            <p style="color:#666; margin-bottom:1rem;">Why are you reporting this?</p>
+
+            <div class="form-group checkbox-group">
+                <input type="radio" name="report_reason" id="r_spam" value="Spam" checked>
+                <label for="r_spam">Spam / Advertising</label>
+            </div>
+            <div class="form-group checkbox-group">
+                <input type="radio" name="report_reason" id="r_inapp" value="Inappropriate Content">
+                <label for="r_inapp">Inappropriate Content</label>
+            </div>
+            <div class="form-group checkbox-group">
+                <input type="radio" name="report_reason" id="r_medical" value="False Medical Info">
+                <label for="r_medical">False Medical Information</label>
+            </div>
+
+            <input type="hidden" id="report-target-type" value="">
+            <input type="hidden" id="report-target-id" value="">
+
+            <button class="btn btn-full" onclick="submitReport()">Submit Report</button>
+        </div>
+    </div>
+
+    <!-- Create Topic Modal -->
+    <div id="create-topic-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Create New Topic</h3>
+                <button class="btn-close" onclick="closeNewTopicModal()">×</button>
+            </div>
+
+            <div class="form-group">
+                <label>Title</label>
+                <input type="text" id="new-topic-title" placeholder="What's on your mind?" />
+            </div>
+
+            <div class="form-group">
+                <label>Category</label>
+                <select id="new-topic-category">
+                    <option value="Hamilelik Günlüğü">Pregnancy Log</option>
+                    <option value="Beslenme">Nutrition</option>
+                    <option value="Doğum Hazırlıkları">Birth Prep</option>
+                    <option value="Bebek Bakımı">Baby Care</option>
+                    <option value="Dertleşme Köşesi">Chat Corner</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Content</label>
+                <textarea id="new-topic-content" rows="5" placeholder="Share your details..."></textarea>
+            </div>
+
+            <div class="form-group checkbox-group">
+                <input type="checkbox" id="new-topic-anon" />
+                <label for="new-topic-anon">Post Anonymously</label>
+            </div>
+
+            <button class="btn btn-full" onclick="submitNewTopic()">Share Topic</button>
+        </div>
+    </div>
+
+    <script src="/ui/js/app.js"></script>
+</body>
+
+</html>
