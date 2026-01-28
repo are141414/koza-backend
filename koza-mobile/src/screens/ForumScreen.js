@@ -23,6 +23,7 @@ export default function ForumScreen() {
     const [newTitle, setNewTitle] = useState('');
     const [newContent, setNewContent] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('1');
+    const [userId, setUserId] = useState(null);
 
     const categories = [
         { id: '1', name: 'Genel' },
@@ -31,15 +32,20 @@ export default function ForumScreen() {
         { id: '4', name: 'Yaşam Tarzı' },
     ];
 
-const loadPosts = async (isRefresh = false) => {
-        // Try cache first if not explicitly refreshing
-        if (!isRefresh) {
-            const cachedPosts = await getData(CACHE_KEYS.FORUM_POSTS);
-            if (cachedPosts && Array.isArray(cachedPosts) && cachedPosts.length > 0) {
-                setPosts(cachedPosts);
-                setLoading(false);
-            }
+    useEffect(() => {
+        loadPosts();
+        loadUser();
+    }, []);
+
+    const loadUser = async () => {
+        const profile = await getData(CACHE_KEYS.USER_PROFILE);
+        if (profile && profile.user_id) {
+            setUserId(profile.user_id);
         }
+    };
+
+    const loadPosts = async (isRefresh = false) => {
+        // ... (loading logic)
 
         try {
             const data = await fetchForumPosts();
@@ -103,6 +109,7 @@ const loadPosts = async (isRefresh = false) => {
 
     useEffect(() => {
         loadPosts();
+        loadUser();
     }, []);
 
     const onRefresh = () => {
@@ -116,11 +123,17 @@ const loadPosts = async (isRefresh = false) => {
             return;
         }
 
+        if (!userId) {
+            alert('Gönderi paylaşmak için oturum açmalısınız.');
+            // Usually we might redirect to Setup, but user should be setup by now.
+            return;
+        }
+
         const success = await createNewPost(
             newTitle,
             newContent,
             parseInt(selectedCategory),
-            1 // Mock user ID
+            userId
         );
 
         if (success) {
@@ -128,7 +141,7 @@ const loadPosts = async (isRefresh = false) => {
             setNewTitle('');
             setNewContent('');
             setShowNewTopicModal(false);
-            loadPosts();
+            loadPosts(true); // Force refresh
         } else {
             alert('Konu oluşturulamadı. Lütfen tekrar deneyin.');
         }
@@ -178,7 +191,16 @@ const loadPosts = async (isRefresh = false) => {
                                     ]}
                                 />
                                 <View style={styles.postMeta}>
-                                    <Text style={styles.authorName}>User #{post.author_id}</Text>
+                                    <View style={{flexDirection:'row', alignItems:'center'}}>
+                                        <Text style={styles.authorName}>
+                                            {post.author_name || "Anonim"}
+                                        </Text>
+                                        {post.author_badge && (
+                                            <View style={{backgroundColor:'#FFD1D4', borderRadius:4, paddingHorizontal:4, marginLeft:5}}>
+                                                <Text style={{fontSize:10, color:'#D45D79'}}>{post.author_badge}</Text>
+                                            </View>
+                                        )}
+                                    </View>
                                     <Text style={styles.postTime}>
                                         {getTimeAgo(post.created_at)}
                                     </Text>
